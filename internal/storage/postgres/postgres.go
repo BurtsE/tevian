@@ -6,6 +6,8 @@ import (
 	"tevian/internal/config"
 	"tevian/internal/models"
 	def "tevian/internal/storage"
+
+	_ "github.com/lib/pq"
 )
 
 var _ def.Storage = (*Storage)(nil)

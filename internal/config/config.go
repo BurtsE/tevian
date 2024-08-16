@@ -8,13 +8,13 @@ type Config struct {
 type Postgres struct {
 	Host     string `json:"host"`
 	Port     string `json:"port"`
-	User     string `json:"user"`
-	Password string `json:"password"`
+	User     string `env:"POSTGRES_USER,notEmpty"`
+	Password string `env:"POSTGRES_PASSWORD,notEmpty"`
 	Sslmode  string `json:"sslmode"`
 	DB       string `json:"db"`
 }
 type Server struct {
-	Port int
+	Port string
 	Host string
 }
 

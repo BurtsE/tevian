@@ -24,7 +24,7 @@ func NewRouter(cfg *config.Config, service service.Service, logger *logrus.Logge
 		logger:  logger,
 		service: service,
 		srv:     &srv,
-		port:    cfg.Postgres.Port,
+		port:    cfg.Server.Port,
 		router:  rtr,
 	}
 	srv.Handler = rtr.Handler

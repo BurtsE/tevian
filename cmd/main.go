@@ -1,14 +1,19 @@
 package main
 
 import (
+	"context"
 	"log"
-	"tevian/internal/config"
+	"tevian/internal/app"
 )
 
 func main() {
-	cfg, err := config.InitConfig()
-	if err != nil {
-		log.Fatal(err)
+	ctx := context.Background()
+	a := app.NewApp(ctx)
+	if a == nil {
+		log.Fatalf("failed to create app")
 	}
-	log.Println(cfg)
+	err := a.Run()
+	if err != nil {
+		log.Fatalf("failed to run app: %s", err.Error())
+	}
 }

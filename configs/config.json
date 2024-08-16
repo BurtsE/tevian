@@ -1,12 +1,12 @@
 {
     "postgres": {
-        "host": "house_db",
+        "host": "localhost",
         "port": "5432",
-        "db": "house_db",
+        "db": "tevian",
         "max_conns": 1,
         "sslmode": "disable"
     },
-    "service" :{
+    "server" :{
         "port": ":8000",
         "host": "127.0.0.1"
     }    
