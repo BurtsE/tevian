@@ -17,7 +17,7 @@ func (t *Task) CalcStats() {
 	)
 	for _, img := range t.Images {
 		for _, face := range img.Faces {
-			switch face.Sex {
+			switch face.Gender {
 			case "male":
 				males++
 				malesMeanAge += float64(face.Age)
@@ -31,6 +31,6 @@ func (t *Task) CalcStats() {
 	t.Stats.FemalesMeanAge = femalesMeanAge/float64(females)
 	t.Stats.MalesMeanAge = malesMeanAge/float64(males)
 	t.Stats.FaceCount = humanCounter
-	t.Stats.
+	t.Stats.HumanCount = uint32(males) + uint32(females)
 
 }

@@ -1,38 +1,40 @@
-package face_cloud
+package facecloud
 
 import (
 	"tevian/internal/config"
 	"tevian/internal/models"
 	def "tevian/internal/service"
+	"tevian/internal/storage"
 )
 
-var _ def.Service = (*Service)(nil)
+var _ def.Service = (*service)(nil)
 
-type Service struct {
+type service struct {
+	storage storage.Storage
 }
 
 // AddImageToTask implements service.Service.
-func (s *Service) AddImageToTask(uuid string, img []byte) error {
+func (s *service) AddImageToTask(string, []byte) error {
 	panic("unimplemented")
 }
 
-
-
 // DeleteTask implements service.Service.
-func (s *Service) DeleteTask(string) error {
+func (s *service) DeleteTask(string) error {
 	panic("unimplemented")
 }
 
 // GetTask implements service.Service.
-func (s *Service) GetTask(string) (models.Task, error) {
+func (s *service) GetTask(string) (models.Task, error) {
 	panic("unimplemented")
 }
 
 // StartTask implements service.Service.
-func (s *Service) StartTask(string) error {
+func (s *service) StartTask(string) error {
 	panic("unimplemented")
 }
 
-func NewService(cfg config.Config) *Service {
-	return &Service{}
+func NewService(storage storage.Storage, cfg *config.Config) *service {
+	return &service{
+		storage: storage,
+	}
 }

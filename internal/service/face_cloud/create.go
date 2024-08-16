@@ -1,5 +1,19 @@
-package face_cloud
+package facecloud
 
-func (s *Service) CreateTask() (string, error) {
-	panic("unimplemented")
+import (
+	"tevian/internal/models"
+
+	"github.com/google/uuid"
+)
+
+func (s *service) CreateTask() (string, error) {
+	task := models.Task{
+		UUID:   uuid.NewString(),
+		Status: models.Pending,
+	}
+	err := s.storage.CreateTask(task)
+	if err != nil {
+		return "", err
+	}
+	return task.UUID, nil
 }

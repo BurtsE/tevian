@@ -1,7 +1,7 @@
 package models
 
 type Face struct {
-	Bbox string
-	Sex  string
-	Age  int
+	Bbox   string 
+	Gender string 
+	Age    int    
 }
