@@ -6,6 +6,9 @@ type Router struct {
 	rtr *router.Router
 }
 
-func NewRouter() {
-
+func NewRouter() *Router {
+	r := &Router{
+		rtr: router.New(),
+	}
+	return r
 }
