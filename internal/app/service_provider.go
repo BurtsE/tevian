@@ -6,6 +6,7 @@ import (
 	"tevian/internal/service"
 	facecloud "tevian/internal/service/face_cloud"
 	"tevian/internal/storage"
+	"tevian/internal/storage/disk"
 	"tevian/internal/storage/postgres"
 
 	"tevian/internal/api"
@@ -14,10 +15,11 @@ import (
 )
 
 type serviceProvider struct {
-	cfg      *config.Config
-	postgres storage.Storage
-	service  service.Service
-	router   *api.Router
+	cfg         *config.Config
+	postgres    storage.Storage
+	service     service.Service
+	router      *api.Router
+	diskStorage storage.DiskStorage
 }
 
 func NewSericeProvider() *serviceProvider {
@@ -51,10 +53,16 @@ func (s *serviceProvider) Service() service.Service {
 	}
 	return s.service
 }
+func (s *serviceProvider) DiskStorage() storage.DiskStorage {
+	if s.diskStorage == nil {
+		s.diskStorage = disk.NewStorage()
+	}
+	return s.diskStorage
+}
 
 func (s *serviceProvider) Router() *api.Router {
 	if s.router == nil {
-		s.router = api.NewRouter(s.Config(), s.Service(), logrus.New())
+		s.router = api.NewRouter(s.Config(), s.Service(), s.DiskStorage(), logrus.New())
 	}
 	return s.router
 }

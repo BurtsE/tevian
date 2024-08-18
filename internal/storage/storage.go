@@ -8,3 +8,7 @@ type Storage interface {
 	FinishTask(models.Task) error
 	DeleteTask(models.Task) error
 }
+type DiskStorage interface {
+	SaveImage(string, string, []byte) error
+	// DeleteImages(string) error
+}
