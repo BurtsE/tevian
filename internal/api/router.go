@@ -3,7 +3,6 @@ package api
 import (
 	"tevian/internal/config"
 	"tevian/internal/service"
-	"tevian/internal/storage"
 
 	"github.com/fasthttp/router"
 	"github.com/sirupsen/logrus"
@@ -11,24 +10,22 @@ import (
 )
 
 type Router struct {
-	logger      *logrus.Logger
-	service     service.Service
-	router      *router.Router
-	srv         *fasthttp.Server
-	port        string
-	diskStorage storage.DiskStorage
+	logger  *logrus.Logger
+	service service.Service
+	router  *router.Router
+	srv     *fasthttp.Server
+	port    string
 }
 
-func NewRouter(cfg *config.Config, service service.Service, diskStorage storage.DiskStorage, logger *logrus.Logger) *Router {
+func NewRouter(cfg *config.Config, service service.Service, logger *logrus.Logger) *Router {
 	srv := fasthttp.Server{}
 	rtr := router.New()
 	r := &Router{
-		logger:      logger,
-		service:     service,
-		srv:         &srv,
-		port:        cfg.Server.Port,
-		router:      rtr,
-		diskStorage: diskStorage,
+		logger:  logger,
+		service: service,
+		srv:     &srv,
+		port:    cfg.Server.Port,
+		router:  rtr,
 	}
 	srv.Handler = rtr.Handler
 	rtr.POST("/task", r.addTask)
@@ -75,7 +72,7 @@ func (r *Router) addImage(ctx *fasthttp.RequestCtx) {
 		return
 	}
 	title := data.File["image"][0].Filename
-	err = r.diskStorage.SaveImage(uuid, title, imgBytes)
+	err = r.service.AddImageToTask(uuid, title, imgBytes)
 	if err != nil {
 		r.logger.Println(err)
 		ctx.SetStatusCode(500)

@@ -10,12 +10,8 @@ import (
 var _ def.Service = (*service)(nil)
 
 type service struct {
-	storage storage.Storage
-}
-
-// AddImageToTask implements service.Service.
-func (s *service) AddImageToTask(string, []byte) error {
-	panic("unimplemented")
+	storage     storage.Storage
+	diskStorage storage.DiskStorage
 }
 
 // DeleteTask implements service.Service.
@@ -33,8 +29,9 @@ func (s *service) StartTask(string) error {
 	panic("unimplemented")
 }
 
-func NewService(storage storage.Storage, cfg *config.Config) *service {
+func NewService(storage storage.Storage, cfg *config.Config, diskStorage storage.DiskStorage) *service {
 	return &service{
-		storage: storage,
+		storage:     storage,
+		diskStorage: diskStorage,
 	}
 }

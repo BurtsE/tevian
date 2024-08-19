@@ -49,7 +49,7 @@ func (s *serviceProvider) Postgres() storage.Storage {
 }
 func (s *serviceProvider) Service() service.Service {
 	if s.service == nil {
-		s.service = facecloud.NewService(s.Postgres(), s.Config())
+		s.service = facecloud.NewService(s.Postgres(), s.Config(), s.DiskStorage())
 	}
 	return s.service
 }
@@ -62,7 +62,7 @@ func (s *serviceProvider) DiskStorage() storage.DiskStorage {
 
 func (s *serviceProvider) Router() *api.Router {
 	if s.router == nil {
-		s.router = api.NewRouter(s.Config(), s.Service(), s.DiskStorage(), logrus.New())
+		s.router = api.NewRouter(s.Config(), s.Service(), logrus.New())
 	}
 	return s.router
 }

@@ -6,7 +6,6 @@ import (
 )
 
 type storage struct {
-	imgNames map[string]int
 }
 
 func NewStorage() *storage {

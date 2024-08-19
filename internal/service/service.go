@@ -7,7 +7,7 @@ type Service interface {
 	GetTask(string) (models.Task, error)
 	StartTask(string) error
 	DeleteTask(string) error
-	AddImageToTask(string, []byte) error
+	AddImageToTask(string, string, []byte) error
 }
 
 type FaceCloud interface {
