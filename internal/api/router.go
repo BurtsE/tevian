@@ -71,6 +71,7 @@ func (r *Router) addImage(ctx *fasthttp.RequestCtx) {
 		ctx.SetStatusCode(500)
 		return
 	}
+	
 	title := data.File["image"][0].Filename
 	err = r.service.AddImageToTask(uuid, title, imgBytes)
 	if err != nil {
@@ -78,11 +79,6 @@ func (r *Router) addImage(ctx *fasthttp.RequestCtx) {
 		ctx.SetStatusCode(500)
 		return
 	}
-	// err = r.service.AddImageToTask(data.Value["uuid"][0], imgBytes)
-	// if err != nil {
-	// 	ctx.SetStatusCode(500)
-	// 	return
-	// }
 }
 
 func (r *Router) Start() error {

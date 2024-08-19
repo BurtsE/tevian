@@ -35,10 +35,6 @@ func NewStorage(cfg *config.Config) (*Storage, error) {
 	}, nil
 }
 
-// AddImage implements storage.Storage.
-func (s *Storage) AddImage(string, models.Image) error {
-	panic("unimplemented")
-}
 
 // CreateTask implements storage.Storage.
 func (s *Storage) CreateTask(task models.Task) error {

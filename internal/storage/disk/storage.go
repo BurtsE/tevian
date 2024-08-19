@@ -2,6 +2,7 @@ package disk
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 )
 
@@ -12,7 +13,7 @@ func NewStorage() *storage {
 	return &storage{}
 }
 
-func (s *storage) SaveImage(uuid, title string, img []byte) error {
+func (s *storage) SaveImage(uuid string, imageId uint64, img []byte) error {
 	fileName := bytes.NewBuffer([]byte("images"))
 
 	err := s.mkDir(fileName.String())
@@ -28,7 +29,7 @@ func (s *storage) SaveImage(uuid, title string, img []byte) error {
 	}
 
 	fileName.WriteByte('/')
-	fileName.WriteString(title)
+	fileName.WriteString(fmt.Sprintf("%d", imageId))
 	err = os.WriteFile(fileName.String(), img, 0777)
 	if err != nil {
 		return err
