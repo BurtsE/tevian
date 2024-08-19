@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
-func (s *storage) SaveImage(uuid string, imageId uint64, img []byte) error {
+func (s *storage) SaveImage(uuid, title string, imageId uint64, img []byte) error {
 	fileName := bytes.NewBuffer([]byte("images"))
 
 	err := s.mkDir(fileName.String())
@@ -20,9 +21,9 @@ func (s *storage) SaveImage(uuid string, imageId uint64, img []byte) error {
 	if err != nil {
 		return err
 	}
-
+	format := filepath.Ext(title)
 	fileName.WriteByte('/')
-	fileName.WriteString(fmt.Sprintf("%d", imageId))
+	fileName.WriteString(fmt.Sprintf("%d%s", imageId, format))
 	err = os.WriteFile(fileName.String(), img, 0777)
 	if err != nil {
 		return err

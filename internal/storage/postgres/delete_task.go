@@ -13,7 +13,7 @@ func (s *Storage) DeleteTask(task models.Task) error {
 		FROM tasks
 		where uuid = $1
 	`
-	row := s.db.QueryRow(query)
+	row := s.db.QueryRow(query, &task.UUID)
 	err := row.Scan(&status)
 	if err != nil {
 		return err
@@ -23,7 +23,7 @@ func (s *Storage) DeleteTask(task models.Task) error {
 	if err != nil {
 		return err
 	}
-	if task.Status == models.Pending {
+	if task.Status == models.Processed {
 		return errors.New("permission denied")
 	}
 
