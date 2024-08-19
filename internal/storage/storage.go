@@ -10,5 +10,5 @@ type Storage interface {
 }
 type DiskStorage interface {
 	SaveImage(string, uint64, []byte) error
-	// DeleteImages(string) error
+	DeleteImages(string) error
 }

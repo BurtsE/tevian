@@ -42,14 +42,10 @@ func (s *Storage) CreateTask(task models.Task) error {
 		INSERT INTO tasks(uuid, progress)
 		VALUES($1,$2)
 	`
-	_, err := s.db.Exec(query, task.UUID, task.Status.String())
+	_, err := s.db.Exec(query, task.UUID, task.Status)
 	return err
 }
 
-// DeleteTask implements storage.Storage.
-func (s *Storage) DeleteTask(models.Task) error {
-	panic("unimplemented")
-}
 
 // FinishTask implements storage.Storage.
 func (s *Storage) FinishTask(models.Task) error {

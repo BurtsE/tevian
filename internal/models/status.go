@@ -20,6 +20,7 @@ type failed struct{ TaskStatus }
 func (p *pending) String() string {
 	return "pending"
 }
+
 func (p *processed) String() string {
 	return "processed"
 }

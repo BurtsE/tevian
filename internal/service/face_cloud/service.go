@@ -14,10 +14,6 @@ type service struct {
 	diskStorage storage.DiskStorage
 }
 
-// DeleteTask implements service.Service.
-func (s *service) DeleteTask(string) error {
-	panic("unimplemented")
-}
 
 // GetTask implements service.Service.
 func (s *service) GetTask(string) (models.Task, error) {
