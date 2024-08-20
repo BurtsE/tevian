@@ -2,10 +2,15 @@ package disk
 
 import (
 	"os"
+	def "tevian/internal/storage"
 )
+
+var _ def.DiskStorage = (*storage)(nil)
 
 type storage struct {
 }
+
+
 
 func NewStorage() *storage {
 	return &storage{}

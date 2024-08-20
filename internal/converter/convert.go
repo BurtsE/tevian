@@ -2,19 +2,24 @@ package converter
 
 import (
 	"errors"
+	"log"
 	"tevian/internal/models"
 )
 
-func ImageFromFaceApi(data models.FaceServiceApi) models.Image {
+func ImageFromFaceApi(data models.FaceServiceTask) models.Image {
 	img := models.Image{}
 	img.Faces = make([]models.Face, 0)
 	for _, face := range data.Data {
 		img.Faces = append(img.Faces, models.Face{
-			Bbox:   face.Bbox,
+			Height: face.Bbox.Height,
+			Width:  face.Bbox.Width,
+			X:      face.Bbox.X,
+			Y:      face.Bbox.Y,
 			Gender: face.Demographics.Gender,
-			Age:    face.Demographics.Age.Mean,
+			Age:    int(face.Demographics.Age.Mean),
 		})
 	}
+	log.Println(data, img)
 	return img
 }
 func TaskStatusFromString(status string) (models.TaskStatus, error) {

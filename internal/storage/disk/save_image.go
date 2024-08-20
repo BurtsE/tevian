@@ -23,7 +23,7 @@ func (s *storage) SaveImage(uuid, title string, imageId uint64, img []byte) erro
 	}
 	format := filepath.Ext(title)
 	fileName.WriteByte('/')
-	fileName.WriteString(fmt.Sprintf("%d%s", imageId, format))
+	fileName.WriteString(fmt.Sprintf("%d", imageId, format))
 	err = os.WriteFile(fileName.String(), img, 0777)
 	if err != nil {
 		return err

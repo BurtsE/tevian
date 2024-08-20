@@ -31,6 +31,7 @@ func NewRouter(cfg *config.Config, service service.Service, logger *logrus.Logge
 	rtr.POST("/task", r.addTask)
 	rtr.PUT("/task/image", r.addImage)
 	rtr.DELETE("/task/{uuid}", r.deleteTask)
+	rtr.POST("/task/{uuid}/start", r.startTask)
 
 	r.router.GET("/status", statusHandler)
 	return r
@@ -94,6 +95,23 @@ func (r *Router) deleteTask(ctx *fasthttp.RequestCtx) {
 		return
 	}
 	err := r.service.DeleteTask(uuid)
+	if err != nil {
+		r.logger.Println(err)
+		ctx.SetStatusCode(500)
+		return
+	}
+}
+func (r *Router) startTask(ctx *fasthttp.RequestCtx) {
+	var (
+		uuid string
+		ok   bool
+	)
+	if uuid, ok = ctx.UserValue("uuid").(string); !ok {
+		r.logger.Println(ctx.UserValue("uuid"))
+		ctx.SetStatusCode(500)
+		return
+	}
+	err := r.service.StartTask(uuid)
 	if err != nil {
 		r.logger.Println(err)
 		ctx.SetStatusCode(500)

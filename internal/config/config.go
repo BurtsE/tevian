@@ -19,7 +19,7 @@ type Server struct {
 }
 
 type FaceCloud struct {
-	Login    string `env:"FACE_CLOUD_LOGIN"`
-	Password string `json:"FACE_CLOUD_PASSWORD"`
-	Url      string `json:"FACE_CLOUD_LOGIN_URL"`
+	Email    string `env:"FACE_CLOUD_LOGIN"`
+	Password string `env:"FACE_CLOUD_PASSWORD"`
+	Url      string `env:"FACE_CLOUD_URL"`
 }
