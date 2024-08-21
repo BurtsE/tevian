@@ -1,19 +1,21 @@
 package models
 
+import "encoding/json"
+
 type Task struct {
-	UUID   string
-	Status TaskStatus
-	Stats  Stats
-	Images []Image
+	UUID   string     `json:"uuid"`
+	Status TaskStatus `json:"status"`
+	Stats  Stats      `json:"statistics"`
+	Images []Image    `json:"images"`
 }
 
 func (t *Task) CalcStats() {
 	var (
-		humanCounter uint32
-		malesMeanAge float64
+		humanCounter   uint32
+		malesMeanAge   float64
 		femalesMeanAge float64
-		males int
-		females int
+		males          int
+		females        int
 	)
 	for _, img := range t.Images {
 		for _, face := range img.Faces {
@@ -28,9 +30,22 @@ func (t *Task) CalcStats() {
 			humanCounter++
 		}
 	}
-	t.Stats.FemalesMeanAge = femalesMeanAge/float64(females)
-	t.Stats.MalesMeanAge = malesMeanAge/float64(males)
+	t.Stats.FemalesMeanAge = femalesMeanAge / float64(females)
+	t.Stats.MalesMeanAge = malesMeanAge / float64(males)
 	t.Stats.FaceCount = humanCounter
 	t.Stats.HumanCount = uint32(males) + uint32(females)
+}
 
+func (t *Task) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&struct {
+		UUID   string  `json:"uuid"`
+		Status string  `json:"status"`
+		Stats  Stats   `json:"statistics"`
+		Images []Image `json:"images"`
+	}{
+		UUID:   t.UUID,
+		Status: t.Status.String(),
+		Stats:  t.Stats,
+		Images: t.Images,
+	})
 }

@@ -20,6 +20,7 @@ type service struct {
 	url             string
 	email, password string
 	token           string
+	workersForTask  int
 }
 
 func NewService(storage storage.Storage, cfg *config.Config, diskStorage storage.DiskStorage) *service {
@@ -29,6 +30,7 @@ func NewService(storage storage.Storage, cfg *config.Config, diskStorage storage
 		url:         cfg.FaceCloud.Url,
 		email:       cfg.FaceCloud.Email,
 		password:    cfg.FaceCloud.Password,
+		workersForTask: 4,
 	}
 	return s
 }
@@ -62,8 +64,3 @@ func (s *service) login() error {
 	return nil
 }
 
-
-// GetTask implements service.Service.
-func (s *service) GetTask(string) (models.Task, error) {
-	panic("unimplemented")
-}

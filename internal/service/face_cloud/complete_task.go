@@ -1,35 +1,46 @@
 package facecloud
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
-	"log"
 	"tevian/internal/converter"
 	"tevian/internal/models"
+	"time"
 
 	"github.com/valyala/fasthttp"
 )
 
 func (s *service) StartTask(uuid string) error {
-	err := s.login()
+	status, err := s.storage.TaskStatus(uuid)
 	if err != nil {
 		return err
 	}
-	images, err := s.diskStorage.GetImages(uuid)
+	if status != models.Pending {
+		return errors.New("task already started")
+	}
+	err = s.storage.SetTaskStatus(uuid, models.Processed)
 	if err != nil {
 		return err
 	}
-	for _, image := range images {
-		processedImage, err := s.processImage(image.Data)
-		if err != nil {
-			return err
-		}
-		processedImage.Id = image.Id
-		err = s.storage.AddFaces(processedImage)
-		if err != nil {
-			return err
-		}
+	err = s.login()
+	if err != nil {
+		return err
 	}
+	images, err := s.diskStorage.Images(uuid)
+	if err != nil {
+		return err
+	}
+
+	resultChan := make(chan models.Image, len(images))
+	jobsChan := make(chan models.Image, len(images))
+	errChan := make(chan error)
+	ctx, cancel := context.WithTimeout(context.WithValue(context.Background(), "uuid", uuid), time.Second*15)
+	go s.producer(ctx, cancel, images, jobsChan, errChan)
+	for range s.workersForTask {
+		go s.worker(ctx, jobsChan, resultChan, errChan)
+	}
+
 	return nil
 }
 
@@ -43,15 +54,12 @@ func (s *service) processImage(data []byte) (models.Image, error) {
 	req.PostArgs().Add("demographics", "true")
 	req.PostArgs().Add("attributes", "true")
 
-	log.Println(req.PostArgs())
-
 	resp := fasthttp.AcquireResponse()
 	err := fasthttp.Do(req, resp)
 	if err != nil {
 		return models.Image{}, err
 	}
 	result := models.FaceServiceTask{}
-	log.Println(string(resp.Body()))
 
 	err = json.Unmarshal(resp.Body(), &result)
 	if err != nil {

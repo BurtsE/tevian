@@ -10,7 +10,7 @@ import (
 )
 
 // GetImages implements storage.DiskStorage.
-func (s *storage) GetImages(uuid string) ([]models.Image, error) {
+func (s *storage) Images(uuid string) ([]models.Image, error) {
 	dirName := fmt.Sprintf("images/%s/", uuid)
 	entries, err := os.ReadDir(dirName)
 	if err != nil {

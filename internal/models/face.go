@@ -1,10 +1,10 @@
 package models
 
 type Face struct {
-	Height int
-	Width  int
-	X      int
-	Y      int
-	Gender string
-	Age    int
+	Height int    `json:"height"`
+	Width  int    `json:"width"`
+	X      int    `json:"x"`
+	Y      int    `json:"y"`
+	Gender string `json:"gender"`
+	Age    int    `json:"age"`
 }

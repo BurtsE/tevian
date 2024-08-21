@@ -9,7 +9,7 @@ import (
 func (s *service) CreateTask() (string, error) {
 	task := models.Task{
 		UUID:   uuid.NewString(),
-		Status: models.Processed,
+		Status: models.Pending,
 	}
 	err := s.storage.CreateTask(task)
 	if err != nil {

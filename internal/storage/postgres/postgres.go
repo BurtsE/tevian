@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"tevian/internal/config"
-	"tevian/internal/models"
 	def "tevian/internal/storage"
 
 	_ "github.com/lib/pq"
@@ -33,19 +32,4 @@ func NewStorage(cfg *config.Config) (*Storage, error) {
 	return &Storage{
 		db: db,
 	}, nil
-}
-
-// CreateTask implements storage.Storage.
-func (s *Storage) CreateTask(task models.Task) error {
-	query := `
-		INSERT INTO tasks(uuid, progress)
-		VALUES($1,$2)
-	`
-	_, err := s.db.Exec(query, task.UUID, task.Status.String())
-	return err
-}
-
-// FinishTask implements storage.Storage.
-func (s *Storage) FinishTask(models.Task) error {
-	panic("unimplemented")
 }

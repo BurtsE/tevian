@@ -24,3 +24,25 @@ func (s *Storage) AddFaces(img models.Image) error {
 	tx.Commit()
 	return nil
 }
+
+func (s *Storage) FacesByImage(imageId int64) ([]models.Face, error) {
+	query := `
+		SELECT width, height, x, y, gender, age
+		FROM faces
+		WHERE image_id = $1
+	`
+	result := make([]models.Face, 0)
+	rows, err := s.db.Query(query, &imageId)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		face := models.Face{}
+		err = rows.Scan(&face.Width, &face.Height, &face.X, &face.Y, &face.Gender, &face.Age)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, face)
+	}
+	return result, nil
+}

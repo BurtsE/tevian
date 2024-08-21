@@ -2,7 +2,6 @@ package converter
 
 import (
 	"errors"
-	"log"
 	"tevian/internal/models"
 )
 
@@ -19,7 +18,6 @@ func ImageFromFaceApi(data models.FaceServiceTask) models.Image {
 			Age:    int(face.Demographics.Age.Mean),
 		})
 	}
-	log.Println(data, img)
 	return img
 }
 func TaskStatusFromString(status string) (models.TaskStatus, error) {
