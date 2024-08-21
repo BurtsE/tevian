@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"log"
 	"tevian/internal/converter"
 	"tevian/internal/models"
 )
@@ -53,6 +54,7 @@ func (s *Storage) SetTaskStatus(uuid string, status models.TaskStatus) error {
 		where uuid = $1
 	`
 	statusStr := status.String()
+	log.Println(uuid, statusStr)
 	_, err := s.db.Exec(query, &uuid, &statusStr)
 	if err != nil {
 		return err

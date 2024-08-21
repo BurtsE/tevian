@@ -19,10 +19,12 @@ func (s *service) StartTask(uuid string) error {
 	if status != models.Pending {
 		return errors.New("task already started")
 	}
+
 	err = s.storage.SetTaskStatus(uuid, models.Processed)
 	if err != nil {
 		return err
 	}
+
 	err = s.login()
 	if err != nil {
 		return err

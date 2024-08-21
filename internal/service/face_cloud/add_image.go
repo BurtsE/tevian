@@ -13,7 +13,7 @@ func (s *service) AddImageToTask(uuid, title string, img []byte) error {
 	if status != models.Pending {
 		return errors.New("task changes unavailable")
 	}
-	
+
 	imageId, err := s.storage.AddImage(uuid, title)
 	if err != nil {
 		return err

@@ -25,7 +25,7 @@ func TaskStatusFromString(status string) (models.TaskStatus, error) {
 	case "pending":
 		return models.Pending, nil
 	case "processed":
-		return models.Pending, nil
+		return models.Processed, nil
 	case "completed":
 		return models.Completed, nil
 	case "failed":
