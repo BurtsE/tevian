@@ -20,6 +20,7 @@ type serviceProvider struct {
 	service     service.Service
 	router      *api.Router
 	diskStorage storage.DiskStorage
+	logger      *logrus.Logger
 }
 
 func NewSericeProvider() *serviceProvider {
@@ -37,6 +38,12 @@ func (s *serviceProvider) Config() *config.Config {
 	}
 	return s.cfg
 }
+func (s *serviceProvider) Logger() *logrus.Logger {
+	if s.logger == nil {
+		s.logger = logrus.New()
+	}
+	return s.logger
+}
 func (s *serviceProvider) Postgres() storage.Storage {
 	if s.postgres == nil {
 		storage, err := postgres.NewStorage(s.Config())
@@ -49,7 +56,7 @@ func (s *serviceProvider) Postgres() storage.Storage {
 }
 func (s *serviceProvider) Service() service.Service {
 	if s.service == nil {
-		s.service = facecloud.NewService(s.Postgres(), s.Config(), s.DiskStorage())
+		s.service = facecloud.NewService(s.Postgres(), s.Config(), s.DiskStorage(), s.Logger())
 	}
 	return s.service
 }

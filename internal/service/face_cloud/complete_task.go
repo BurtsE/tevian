@@ -42,7 +42,7 @@ func (s *service) StartTask(uuid string) error {
 			return err
 		}
 	}
-	
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
 	s.cancelTasks.Store(uuid, cancel)
 	go s.initWorkers(ctx, uuid, images)

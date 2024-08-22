@@ -40,7 +40,7 @@ func (s *service) worker(ctx context.Context, uuid string, jobs <-chan models.Im
 			if !ok {
 				return
 			}
-			log.Printf("worker started processing image with id: %d", j.Id)
+			s.logger.Printf("worker started processing image with id: %d", j.Id)
 
 			processedImage, err := s.processImage(j.Data)
 			if err != nil {
@@ -54,7 +54,7 @@ func (s *service) worker(ctx context.Context, uuid string, jobs <-chan models.Im
 				s.cancelTask(uuid)
 				return
 			}
-			log.Printf("image with id %d processed", j.Id)
+			s.logger.Printf("image with id %d processed", j.Id)
 		}
 	}
 }
