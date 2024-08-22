@@ -33,7 +33,7 @@ func NewRouter(cfg *config.Config, service service.Service, logger *logrus.Logge
 		user:     cfg.Credentials.Login,
 		password: cfg.Credentials.Password,
 	}
-	srv.Handler = r.basicAuth(rtr.Handler)
+	srv.Handler = r.loggerDecorator(r.basicAuth(rtr.Handler))
 
 	rtr.GET("/task/{uuid}", r.task)
 	rtr.POST("/task", r.addTask)
@@ -56,6 +56,19 @@ func statusHandler(ctx *fasthttp.RequestCtx) {
 	ctx.SetStatusCode(fasthttp.StatusOK)
 }
 
+func (r *Router) loggerDecorator(handler fasthttp.RequestHandler) fasthttp.RequestHandler {
+	return func(ctx *fasthttp.RequestCtx) {
+		defer func() {
+			if recover := recover(); recover != nil {
+				r.logger.Println("Recovered in f", recover)
+				ctx.SetStatusCode(500)
+			}
+		}()
+		handler(ctx)
+		r.logger.Printf("api request: %s ;status code: %d", ctx.Path(), ctx.Response.StatusCode())
+	}
+}
+
 func (r *Router) basicAuth(handler fasthttp.RequestHandler) fasthttp.RequestHandler {
 	return func(ctx *fasthttp.RequestCtx) {
 		auth := ctx.Request.Header.Peek("Authorization")
@@ -68,7 +81,6 @@ func (r *Router) basicAuth(handler fasthttp.RequestHandler) fasthttp.RequestHand
 			return
 		}
 		handler(ctx)
-		r.logger.Printf("api request: %s ;status code: %d", ctx.Path(), ctx.Response.StatusCode())
 	}
 }
 

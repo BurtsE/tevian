@@ -8,6 +8,4 @@ type Service interface {
 	StartTask(string) error
 	DeleteTask(string) error
 	AddImageToTask(string, string, []byte) error
-
-	// Auth(models.User) (string, error)
 }
