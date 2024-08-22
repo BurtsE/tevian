@@ -2,75 +2,85 @@ package facecloud
 
 import (
 	"context"
+	"errors"
 	"log"
+	"sync"
 	"tevian/internal/models"
 )
 
-func (s *service) worker(ctx context.Context, jobs <-chan models.Image, results chan<- models.Image, errChan chan error) {
-	for j := range jobs {
-		log.Printf("worker started processing image with id: %d", j.Id)
-		processedImage, err := s.processImage(j.Data)
-		if err != nil {
-			errChan <- err
-		}
-		processedImage.Id = j.Id
+func (s *service) initWorkers(ctx context.Context, uuid string, images []models.Image) {
+	errChan := make(chan error)
+	defer close(errChan)
 
-		err = s.storage.AddFaces(processedImage)
-		if err != nil {
-			errChan <- err
+	jobsChan := make(chan models.Image, len(images))
+	wg := new(sync.WaitGroup)
+
+	for range s.workersForTask {
+		wg.Add(1)
+		go s.worker(ctx, uuid, jobsChan, wg)
+	}
+	go func() {
+		defer close(jobsChan)
+		for _, image := range images {
+			jobsChan <- image
 		}
-		log.Printf("image with id %d processed", j.Id)
+	}()
+	wg.Wait()
+	select {
+	case <-ctx.Done():
+		s.stopExecution(uuid, errors.New(""))
+	default:
+		s.completeExecution(uuid)
+	}
+}
+func (s *service) worker(ctx context.Context, uuid string, jobs <-chan models.Image, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for {
 		select {
 		case <-ctx.Done():
 			return
-		case results <- processedImage:
+		case j, ok := <-jobs:
+			if !ok {
+				return
+			}
+			log.Printf("worker started processing image with id: %d", j.Id)
+			processedImage, err := s.processImage(j.Data)
+			if err != nil {
+				s.cancelTask(uuid)
+			}
+			processedImage.Id = j.Id
+
+			err = s.storage.AddFaces(processedImage)
+			if err != nil {
+				s.cancelTask(uuid)
+			}
+			log.Printf("image with id %d processed", j.Id)
 		}
 	}
 }
-func (s *service) producer(ctx context.Context, cancel context.CancelFunc,
-	images []models.Image, jobs chan<- models.Image, errChan chan error) {
-	var (
-		err  error
-		ok   bool
-		uuid string
-	)
-	defer func() {
-		close(jobs)
-		if uuid, ok = ctx.Value("uuid").(string); !ok {
-			panic("task uuid was not provided to producer")
-		}
-		if err != nil {
-			errStatusUpd := s.storage.SetTaskStatus(uuid, models.Failed)
-			if errStatusUpd != nil {
-				log.Printf("could not update task status! uuid: %s, err:%v", uuid, errStatusUpd)
-				return
-			}
-			log.Printf("task with id %s failed: %v", uuid, err)
-			return
-		}
 
-		errStatusUpd := s.storage.SetTaskStatus(uuid, models.Completed)
-		if errStatusUpd != nil {
-			log.Printf("could not update task status! uuid: %s, err:%v", uuid, errStatusUpd)
-			return
-		} else {
-			log.Printf("task with id %s finished successfully", uuid)
-		}
-	}()
-
-	for _, image := range images {
-		select {
-		case err = <-errChan:
-			log.Println(err)
-			cancel()
-			return
-		case jobs <- image:
-		}
+func (s *service) stopExecution(uuid string, err error) {
+	errStatusUpd := s.storage.SetTaskStatus(uuid, models.Failed)
+	if errStatusUpd != nil {
+		log.Printf("could not update task status! uuid: %s, err:%v", uuid, errStatusUpd)
+		return
 	}
-	select {
-	case <-ctx.Done():
-	case err = <-errChan:
-		log.Println(err)
-		cancel()
+	log.Printf("task with id %s failed: %v", uuid, err)
+}
+
+func (s *service) completeExecution(uuid string) {
+	errStatusUpd := s.storage.SetTaskStatus(uuid, models.Completed)
+	if errStatusUpd != nil {
+		log.Printf("could not update task status! uuid: %s, err:%v", uuid, errStatusUpd)
+		return
+	}
+	log.Printf("task with id %s finished successfully", uuid)
+}
+
+func (s *service) cancelTask(uuid string) {
+	cancel, ok := s.cancelTasks.Load(uuid)
+	if ok {
+		cancel.(context.CancelFunc)()
+		s.cancelTasks.Delete(uuid)
 	}
 }

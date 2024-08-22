@@ -1,7 +1,9 @@
 package api
 
 import (
-	"encoding/json"
+	"bytes"
+	"encoding/base64"
+	"log"
 	"tevian/internal/config"
 	"tevian/internal/service"
 
@@ -11,138 +13,37 @@ import (
 )
 
 type Router struct {
-	logger  *logrus.Logger
-	service service.Service
-	router  *router.Router
-	srv     *fasthttp.Server
-	port    string
+	logger   *logrus.Logger
+	service  service.Service
+	router   *router.Router
+	srv      *fasthttp.Server
+	port     string
+	user     string
+	password string
 }
 
 func NewRouter(cfg *config.Config, service service.Service, logger *logrus.Logger) *Router {
 	srv := fasthttp.Server{}
 	rtr := router.New()
 	r := &Router{
-		logger:  logger,
-		service: service,
-		srv:     &srv,
-		port:    cfg.Server.Port,
-		router:  rtr,
+		logger:   logger,
+		service:  service,
+		srv:      &srv,
+		port:     cfg.Server.Port,
+		router:   rtr,
+		user:     cfg.Credentials.Login,
+		password: cfg.Credentials.Password,
 	}
-	srv.Handler = rtr.Handler
+	srv.Handler = r.basicAuth(rtr.Handler)
+
 	rtr.GET("/task/{uuid}", r.task)
 	rtr.POST("/task", r.addTask)
-	rtr.PUT("/task/image", r.addImage)
-	rtr.DELETE("/task/{uuid}", r.deleteTask)
 	rtr.POST("/task/{uuid}/start", r.startTask)
+	rtr.DELETE("/task/{uuid}", r.deleteTask)
+	rtr.PUT("/task/image", r.addImage)
 
 	r.router.GET("/status", statusHandler)
 	return r
-}
-
-func (r *Router) task(ctx *fasthttp.RequestCtx) {
-	var (
-		uuid string
-		ok   bool
-	)
-	if uuid, ok = ctx.UserValue("uuid").(string); !ok {
-		r.logger.Println(ctx.UserValue("uuid"))
-		ctx.SetStatusCode(500)
-		return
-	}
-	task, err := r.service.Task(uuid)
-	if err != nil {
-		r.logger.Println(err)
-		ctx.SetStatusCode(500)
-		return
-	}
-	data, err := json.Marshal(&task)
-	if err != nil {
-		ctx.SetStatusCode(500)
-		return
-	}
-	ctx.Response.AppendBody(data)
-}
-
-func (r *Router) addTask(ctx *fasthttp.RequestCtx) {
-	uuid, err := r.service.CreateTask()
-	if err != nil {
-		r.logger.Println(err)
-		ctx.SetStatusCode(500)
-		return
-	}
-	ctx.Response.AppendBody([]byte(uuid))
-}
-
-func (r *Router) addImage(ctx *fasthttp.RequestCtx) {
-	data, err := ctx.MultipartForm()
-	if err != nil {
-		r.logger.Println(err)
-		ctx.SetStatusCode(500)
-		return
-	}
-
-	if len(data.Value["uuid"]) != 1 || len(data.File["image"]) != 1 {
-		r.logger.Println("wrong input")
-		ctx.SetStatusCode(500)
-		return
-	}
-	img, err := data.File["image"][0].Open()
-	if err != nil {
-		r.logger.Println(err)
-		ctx.SetStatusCode(500)
-		return
-	}
-	imgBytes := make([]byte, data.File["image"][0].Size)
-	uuid := data.Value["uuid"][0]
-	_, err = img.Read(imgBytes)
-	if err != nil {
-		r.logger.Println(err)
-		ctx.SetStatusCode(500)
-		return
-	}
-
-	title := data.File["image"][0].Filename
-	err = r.service.AddImageToTask(uuid, title, imgBytes)
-	if err != nil {
-		r.logger.Println(err)
-		ctx.SetStatusCode(500)
-		return
-	}
-}
-
-func (r *Router) deleteTask(ctx *fasthttp.RequestCtx) {
-	var (
-		uuid string
-		ok   bool
-	)
-	if uuid, ok = ctx.UserValue("uuid").(string); !ok {
-		r.logger.Println(ctx.UserValue("uuid"))
-		ctx.SetStatusCode(500)
-		return
-	}
-	err := r.service.DeleteTask(uuid)
-	if err != nil {
-		r.logger.Println(err)
-		ctx.SetStatusCode(500)
-		return
-	}
-}
-func (r *Router) startTask(ctx *fasthttp.RequestCtx) {
-	var (
-		uuid string
-		ok   bool
-	)
-	if uuid, ok = ctx.UserValue("uuid").(string); !ok {
-		r.logger.Println(ctx.UserValue("uuid"))
-		ctx.SetStatusCode(500)
-		return
-	}
-	err := r.service.StartTask(uuid)
-	if err != nil {
-		r.logger.Println(err)
-		ctx.SetStatusCode(500)
-		return
-	}
 }
 
 func (r *Router) Start() error {
@@ -154,4 +55,46 @@ func (r *Router) Shutdown() error {
 
 func statusHandler(ctx *fasthttp.RequestCtx) {
 	ctx.SetStatusCode(fasthttp.StatusOK)
+}
+
+func (r *Router) basicAuth(handler fasthttp.RequestHandler) fasthttp.RequestHandler {
+	return func(ctx *fasthttp.RequestCtx) {
+		auth := ctx.Request.Header.Peek("Authorization")
+		if !r.checkAuthReq(auth) {
+			ctx.SetStatusCode(401)
+			ctx.SetBody([]byte("authorization failed"))
+			return
+		}
+		handler(ctx)
+		r.logger.Printf("api request: %s ;status code: %d", ctx.Path(), ctx.Response.StatusCode())
+	}
+}
+
+func (r *Router) checkAuthReq(auth []byte) bool {
+	i := bytes.IndexByte(auth, ' ')
+	if i == -1 {
+		return false
+	}
+
+	if !bytes.EqualFold(auth[:i], []byte("basic")) {
+		return false
+	}
+	log.Println(string(auth[i+1:]))
+	decoded, err := base64.StdEncoding.DecodeString(string(auth[i+1:]))
+	if err != nil {
+		return false
+	}
+
+	credentials := bytes.Split(decoded, []byte(":"))
+	if len(credentials) <= 1 {
+		log.Println(string(credentials[0]))
+		return false
+	}
+
+	user := string(credentials[0])
+	pass := string(credentials[1])
+	if user != r.user || pass != r.password {
+		return false
+	}
+	return true
 }

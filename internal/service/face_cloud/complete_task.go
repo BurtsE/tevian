@@ -34,15 +34,9 @@ func (s *service) StartTask(uuid string) error {
 		return err
 	}
 
-	resultChan := make(chan models.Image, len(images))
-	jobsChan := make(chan models.Image, len(images))
-	errChan := make(chan error)
 	ctx, cancel := context.WithTimeout(context.WithValue(context.Background(), "uuid", uuid), time.Second*15)
-	go s.producer(ctx, cancel, images, jobsChan, errChan)
-	for range s.workersForTask {
-		go s.worker(ctx, jobsChan, resultChan, errChan)
-	}
-
+	s.cancelTasks.Store(uuid, cancel)
+	s.initWorkers(ctx, uuid, images)
 	return nil
 }
 
@@ -51,7 +45,7 @@ func (s *service) processImage(data []byte) (models.Image, error) {
 	req.SetRequestURI(s.url + "/api/v1/detect?demographics=true")
 	req.Header.SetMethod("POST")
 	req.Header.Set("Content-Type", "image/jpeg")
-	req.Header.Set("Authorization", s.token)
+	req.Header.Set("Authorization", s.faceCloudToken)
 	req.SetBody(data)
 	req.PostArgs().Add("demographics", "true")
 	req.PostArgs().Add("attributes", "true")

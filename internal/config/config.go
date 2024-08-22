@@ -1,9 +1,10 @@
 package config
 
 type Config struct {
-	Postgres  `json:"postgres"`
-	Server    `json:"server"`
-	FaceCloud `json:"face_cloud"`
+	Postgres    `json:"postgres"`
+	Server      `json:"server"`
+	FaceCloud   `json:"face_cloud"`
+	Credentials `json:"credentials"`
 }
 type Postgres struct {
 	Host     string `json:"host"`
@@ -22,4 +23,9 @@ type FaceCloud struct {
 	Email    string `env:"FACE_CLOUD_LOGIN"`
 	Password string `env:"FACE_CLOUD_PASSWORD"`
 	Url      string `env:"FACE_CLOUD_URL"`
+}
+
+type Credentials struct {
+	Login    string `env:"LOGIN,notEmpty"`
+	Password string `env:"PASSWORD,notEmpty"`
 }
