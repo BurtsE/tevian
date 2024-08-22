@@ -20,3 +20,7 @@ docker-compose -f deploy/compose.yml up
 ## HTTP basic auth 
 * LOGIN="abc"
 * PASSWORD="123"
+
+# API
+
+Осписание апи представлено в файле api.json
