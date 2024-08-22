@@ -3,7 +3,6 @@ package api
 import (
 	"bytes"
 	"encoding/base64"
-	"log"
 	"tevian/internal/config"
 	"tevian/internal/service"
 
@@ -60,6 +59,9 @@ func statusHandler(ctx *fasthttp.RequestCtx) {
 func (r *Router) basicAuth(handler fasthttp.RequestHandler) fasthttp.RequestHandler {
 	return func(ctx *fasthttp.RequestCtx) {
 		auth := ctx.Request.Header.Peek("Authorization")
+		if len(auth) == 0 {
+			r.sendAuthReq(ctx)
+		}
 		if !r.checkAuthReq(auth) {
 			ctx.SetStatusCode(401)
 			ctx.SetBody([]byte("authorization failed"))
@@ -79,7 +81,6 @@ func (r *Router) checkAuthReq(auth []byte) bool {
 	if !bytes.EqualFold(auth[:i], []byte("basic")) {
 		return false
 	}
-	log.Println(string(auth[i+1:]))
 	decoded, err := base64.StdEncoding.DecodeString(string(auth[i+1:]))
 	if err != nil {
 		return false
@@ -87,7 +88,6 @@ func (r *Router) checkAuthReq(auth []byte) bool {
 
 	credentials := bytes.Split(decoded, []byte(":"))
 	if len(credentials) <= 1 {
-		log.Println(string(credentials[0]))
 		return false
 	}
 
@@ -97,4 +97,10 @@ func (r *Router) checkAuthReq(auth []byte) bool {
 		return false
 	}
 	return true
+}
+
+func (r *Router) sendAuthReq(ctx *fasthttp.RequestCtx) {
+	ctx.Response.Header.DisableNormalizing()
+	ctx.Response.Header.SetStatusCode(fasthttp.StatusUnauthorized)
+	ctx.Response.Header.Add("WWW-Authenticate", `Basic realm="Come again"`)
 }

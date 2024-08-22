@@ -1,0 +1,27 @@
+services:
+  database:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - ../sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+  server:
+    environment:
+      - FACE_CLOUD_LOGIN=${FACE_CLOUD_LOGIN}
+      - FACE_CLOUD_PASSWORD=${FACE_CLOUD_PASSWORD}
+      - FACE_CLOUD_URL=${FACE_CLOUD_URL}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - LOGIN=${LOGIN}
+      - PASSWORD=${PASSWORD}
+    build:
+      context:    ../
+      dockerfile: ./deploy/Dockerfile
+    restart: always
+
+    ports:
+      - "8000:8000"
