@@ -1,6 +1,6 @@
 {
     "postgres": {
-        "host": "localhost",
+        "host": "database",
         "port": "5432",
         "db": "tevian",
         "max_conns": 1,

@@ -1,0 +1,179 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "home-iot-api",
+      "description": "The API for service",
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "https://app.swaggerhub.com/apis/BURCEVEGOR/tevian/1.0.0",
+        "description": "SwaggerHub API Auto Mocking"
+      }
+    ],
+    "paths": {
+      "/task/{task_id}": {
+        "get": {
+          "tags": [
+            "Task"
+          ],
+          "description": "Get task results",
+          "parameters": [
+            {
+              "name": "task_id",
+              "in": "path",
+              "description": "unique task identificator",
+              "required": true,
+              "style": "simple",
+              "explode": false,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Task results",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uri",
+                      "example": "http://10.0.0.225:8080"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "Task"
+          ],
+          "description": "Delete task",
+          "parameters": [
+            {
+              "name": "task_id",
+              "in": "path",
+              "description": "unique task identificator",
+              "required": true,
+              "style": "simple",
+              "explode": false,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Task deleted"
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/task": {
+        "post": {
+          "tags": [
+            "Task"
+          ],
+          "description": "Create task",
+          "responses": {
+            "200": {
+              "description": "Task created",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "type": "string",
+                    "example": "49cf80ba-fcf8-47dc-8bbd-071ed81bb0da"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/task/{task_id}/start": {
+        "post": {
+          "tags": [
+            "Task"
+          ],
+          "description": "Start task",
+          "parameters": [
+            {
+              "name": "task_id",
+              "in": "path",
+              "description": "unique task identificator",
+              "required": true,
+              "style": "simple",
+              "explode": false,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Task initialized"
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/task/image": {
+        "put": {
+          "tags": [
+            "Image"
+          ],
+          "description": "Add image to task",
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "$ref": "#/components/schemas/task_image_body"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Task deleted"
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "takskId": {
+          "type": "object"
+        },
+        "task_image_body": {
+          "type": "object",
+          "properties": {
+            "image/jpeg": {
+              "type": "string",
+              "format": "binary"
+            },
+            "task_id": {
+              "type": "string",
+              "example": "49cf80ba-fcf8-47dc-8bbd-071ed81bb0da"
+            }
+          }
+        }
+      }
+    }
+  }
