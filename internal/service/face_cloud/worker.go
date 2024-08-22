@@ -9,8 +9,6 @@ import (
 )
 
 func (s *service) initWorkers(ctx context.Context, uuid string, images []models.Image) {
-	errChan := make(chan error)
-	defer close(errChan)
 
 	jobsChan := make(chan models.Image, len(images))
 	wg := new(sync.WaitGroup)
@@ -28,7 +26,8 @@ func (s *service) initWorkers(ctx context.Context, uuid string, images []models.
 	wg.Wait()
 	select {
 	case <-ctx.Done():
-		s.stopExecution(uuid, errors.New(""))
+		log.Println("done")
+		s.stopExecution(uuid, errors.New("task was cancelled"))
 	default:
 		s.completeExecution(uuid)
 	}
@@ -44,15 +43,18 @@ func (s *service) worker(ctx context.Context, uuid string, jobs <-chan models.Im
 				return
 			}
 			log.Printf("worker started processing image with id: %d", j.Id)
+
 			processedImage, err := s.processImage(j.Data)
 			if err != nil {
 				s.cancelTask(uuid)
+				return
 			}
 			processedImage.Id = j.Id
 
 			err = s.storage.AddFaces(processedImage)
 			if err != nil {
 				s.cancelTask(uuid)
+				return
 			}
 			log.Printf("image with id %d processed", j.Id)
 		}
