@@ -1,16 +1,10 @@
 package facecloud
 
 import (
-	"encoding/json"
-	"errors"
-	"fmt"
 	"sync"
 	"tevian/internal/config"
-	"tevian/internal/models"
 	def "tevian/internal/service"
 	"tevian/internal/storage"
-
-	"github.com/valyala/fasthttp"
 )
 
 var _ def.Service = (*service)(nil)
@@ -36,33 +30,4 @@ func NewService(storage storage.Storage, cfg *config.Config, diskStorage storage
 		cancelTasks:    sync.Map{},
 	}
 	return s
-}
-
-func (s *service) login() error {
-	loginJSON := fmt.Sprintf(`{
-		"email": "%s",
-		"password": "%s"
-  	}`, s.email, s.password)
-
-	req := fasthttp.AcquireRequest()
-	req.SetRequestURI(s.url + "/api/v1/login")
-	req.Header.SetMethod("POST")
-	req.SetBody([]byte(loginJSON))
-	req.Header.Set("Content-Type", "application/json")
-
-	resp := fasthttp.AcquireResponse()
-	err := fasthttp.Do(req, resp)
-	if err != nil {
-		return err
-	}
-	data := models.FaceServiceLogin{}
-	err = json.Unmarshal(resp.Body(), &data)
-	if err != nil {
-		return err
-	}
-	if data.StatusCode != 200 {
-		return errors.New(data.Message)
-	}
-	s.faceCloudToken = "Bearer " + data.Data.Token
-	return nil
 }

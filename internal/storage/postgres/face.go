@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"tevian/internal/models"
 )
 
@@ -33,7 +34,7 @@ func (s *Storage) FacesByImage(imageId int64) ([]models.Face, error) {
 	`
 	result := make([]models.Face, 0)
 	rows, err := s.db.Query(query, &imageId)
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 	for rows.Next() {

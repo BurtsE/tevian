@@ -1,8 +1,9 @@
 package facecloud
 
 import (
-	"errors"
 	"tevian/internal/models"
+
+	"github.com/google/uuid"
 )
 
 func (s *service) Task(uuid string) (models.Task, error) {
@@ -28,13 +29,25 @@ func (s *service) Task(uuid string) (models.Task, error) {
 	return task, nil
 }
 
+func (s *service) CreateTask() (string, error) {
+	task := models.Task{
+		UUID:   uuid.NewString(),
+		Status: models.Pending,
+	}
+	err := s.storage.CreateTask(task)
+	if err != nil {
+		return "", err
+	}
+	return task.UUID, nil
+}
+
 func (s *service) DeleteTask(uuid string) error {
 	status, err := s.storage.TaskStatus(uuid)
 	if err != nil {
 		return err
 	}
 	if status == models.Processed {
-		return errors.New("task is being processed")
+		s.cancelTask(uuid)
 	}
 	task := models.Task{
 		UUID:   uuid,

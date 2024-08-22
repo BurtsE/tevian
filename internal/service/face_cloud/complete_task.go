@@ -2,22 +2,24 @@ package facecloud
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"tevian/internal/converter"
 	"tevian/internal/models"
 	"time"
-
-	"github.com/valyala/fasthttp"
 )
 
 func (s *service) StartTask(uuid string) error {
+	var filter bool
 	status, err := s.storage.TaskStatus(uuid)
 	if err != nil {
 		return err
 	}
-	if status != models.Pending {
+	switch status {
+	case models.Processed:
 		return errors.New("task already started")
+	case models.Completed:
+		return nil
+	case models.Failed:
+		filter = true
 	}
 
 	err = s.storage.SetTaskStatus(uuid, models.Processed)
@@ -29,41 +31,43 @@ func (s *service) StartTask(uuid string) error {
 	if err != nil {
 		return err
 	}
+
 	images, err := s.diskStorage.Images(uuid)
 	if err != nil {
 		return err
 	}
-
-	ctx, cancel := context.WithTimeout(context.WithValue(context.Background(), "uuid", uuid), time.Second*15)
+	if filter {
+		images, err = s.filterProcessedImages(images)
+		if err != nil {
+			return err
+		}
+	}
+	
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
 	s.cancelTasks.Store(uuid, cancel)
-	s.initWorkers(ctx, uuid, images)
+	go s.initWorkers(ctx, uuid, images)
 	return nil
 }
 
-func (s *service) processImage(data []byte) (models.Image, error) {
-	req := fasthttp.AcquireRequest()
-	req.SetRequestURI(s.url + "/api/v1/detect?demographics=true")
-	req.Header.SetMethod("POST")
-	req.Header.Set("Content-Type", "image/jpeg")
-	req.Header.Set("Authorization", s.faceCloudToken)
-	req.SetBody(data)
-	req.PostArgs().Add("demographics", "true")
-	req.PostArgs().Add("attributes", "true")
+func (s *service) cancelTask(uuid string) {
+	cancel, ok := s.cancelTasks.Load(uuid)
+	if ok {
+		cancel.(context.CancelFunc)()
+		s.cancelTasks.Delete(uuid)
+	}
+}
 
-	resp := fasthttp.AcquireResponse()
-	err := fasthttp.Do(req, resp)
-	if err != nil {
-		return models.Image{}, err
+func (s *service) filterProcessedImages(images []models.Image) ([]models.Image, error) {
+	filteredImages := make([]models.Image, 0)
+	for _, image := range images {
+		faces, err := s.storage.FacesByImage(image.Id)
+		if err != nil {
+			return nil, err
+		}
+		if len(faces) != 0 {
+			continue
+		}
+		filteredImages = append(filteredImages, image)
 	}
-	result := models.FaceServiceTask{}
-
-	err = json.Unmarshal(resp.Body(), &result)
-	if err != nil {
-		return models.Image{}, err
-	}
-	if result.StatusCode != 200 {
-		return models.Image{}, errors.New(result.Message)
-	}
-	image := converter.ImageFromFaceApi(result)
-	return image, nil
+	return filteredImages, nil
 }
