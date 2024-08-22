@@ -3,7 +3,6 @@ package facecloud
 import (
 	"context"
 	"errors"
-	"log"
 	"sync"
 	"tevian/internal/models"
 )
