@@ -7,7 +7,7 @@
     },
     "servers": [
       {
-        "url": "https://app.swaggerhub.com/apis/BURCEVEGOR/tevian/1.0.0",
+        "url": "https://virtserver.swaggerhub.com/BURCEVEGOR/tevian/1.0.0",
         "description": "SwaggerHub API Auto Mocking"
       }
     ],
