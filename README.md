@@ -8,6 +8,8 @@ make docker-up
 
 docker-compose -f deploy/compose.yml up
 
+Сервис будет доступен по адресу localhost:8000
+
 # Список необходимых переменных окружения:
 ## Данные для аккаунта в Facecloud
 * FACE_CLOUD_LOGIN="new-user@example.com"
