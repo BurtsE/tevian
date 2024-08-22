@@ -2,7 +2,6 @@ package facecloud
 
 import (
 	"errors"
-	"log"
 	"tevian/internal/models"
 )
 
@@ -11,7 +10,6 @@ func (s *service) AddImageToTask(uuid, title string, img []byte) error {
 	if err != nil {
 		return err
 	}
-	log.Println(status)
 	if status != models.Pending {
 		return errors.New("task changes unavailable")
 	}

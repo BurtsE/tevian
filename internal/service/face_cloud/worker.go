@@ -62,17 +62,17 @@ func (s *service) worker(ctx context.Context, uuid string, jobs <-chan models.Im
 func (s *service) stopExecution(uuid string, err error) {
 	errStatusUpd := s.storage.SetTaskStatus(uuid, models.Failed)
 	if errStatusUpd != nil {
-		log.Printf("could not update task status! uuid: %s, err:%v", uuid, errStatusUpd)
+		s.logger.Printf("could not update task status! uuid: %s, err:%v", uuid, errStatusUpd)
 		return
 	}
-	log.Printf("task with id %s failed: %v", uuid, err)
+	s.logger.Printf("task with id %s failed: %v", uuid, err)
 }
 
 func (s *service) completeExecution(uuid string) {
 	errStatusUpd := s.storage.SetTaskStatus(uuid, models.Completed)
 	if errStatusUpd != nil {
-		log.Printf("could not update task status! uuid: %s, err:%v", uuid, errStatusUpd)
+		s.logger.Printf("could not update task status! uuid: %s, err:%v", uuid, errStatusUpd)
 		return
 	}
-	log.Printf("task with id %s finished successfully", uuid)
+	s.logger.Printf("task with id %s finished successfully", uuid)
 }
