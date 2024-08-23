@@ -44,16 +44,18 @@ func (s *service) StartTask(uuid string) error {
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
-	s.cancelTasks.Store(uuid, cancel)
+	s.storeFunc(uuid, cancel)
 	go s.initWorkers(ctx, uuid, images)
 	return nil
 }
 
 func (s *service) cancelTask(uuid string) {
-	cancel, ok := s.cancelTasks.Load(uuid)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	cancel, ok := s.cancelTasks[uuid]
 	if ok {
-		cancel.(context.CancelFunc)()
-		s.cancelTasks.Delete(uuid)
+		cancel()
+		delete(s.cancelTasks, uuid)
 	}
 }
 
@@ -70,4 +72,10 @@ func (s *service) filterProcessedImages(images []models.Image) ([]models.Image, 
 		filteredImages = append(filteredImages, image)
 	}
 	return filteredImages, nil
+}
+
+func (s *service) storeFunc(uuid string, cancel context.CancelFunc) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.cancelTasks[uuid] = cancel
 }

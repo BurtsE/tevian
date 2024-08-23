@@ -1,6 +1,7 @@
 package facecloud
 
 import (
+	"context"
 	"sync"
 	"tevian/internal/config"
 	def "tevian/internal/service"
@@ -18,7 +19,8 @@ type service struct {
 	email, password string
 	faceCloudToken  string
 	workersForTask  int
-	cancelTasks     sync.Map
+	cancelTasks     map[string]context.CancelFunc
+	mu              sync.Mutex
 	logger          *logrus.Logger
 }
 
@@ -31,7 +33,7 @@ func NewService(storage storage.Storage, cfg *config.Config, diskStorage storage
 		password:       cfg.FaceCloud.Password,
 		logger:         logger,
 		workersForTask: 4,
-		cancelTasks:    sync.Map{},
+		cancelTasks:    make(map[string]context.CancelFunc),
 	}
 	return s
 }

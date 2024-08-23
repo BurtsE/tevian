@@ -13,12 +13,16 @@ func (s *service) initWorkers(ctx context.Context, uuid string, images []models.
 
 	for range s.workersForTask {
 		wg.Add(1)
-		go s.worker(ctx, uuid, jobsChan, wg)
+		go s.worker(uuid, jobsChan, wg)
 	}
 	go func() {
 		defer close(jobsChan)
 		for _, image := range images {
-			jobsChan <- image
+			select {
+			case <-ctx.Done():
+				return
+			case jobsChan <- image:
+			}
 		}
 	}()
 	wg.Wait()
@@ -29,32 +33,24 @@ func (s *service) initWorkers(ctx context.Context, uuid string, images []models.
 		s.completeExecution(uuid)
 	}
 }
-func (s *service) worker(ctx context.Context, uuid string, jobs <-chan models.Image, wg *sync.WaitGroup) {
+func (s *service) worker(uuid string, jobs <-chan models.Image, wg *sync.WaitGroup) {
 	defer wg.Done()
-	for {
-		select {
-		case <-ctx.Done():
+	for j := range jobs {
+		s.logger.Printf("worker started processing image with id: %d", j.Id)
+
+		processedImage, err := s.processImage(j.Data)
+		if err != nil {
+			s.cancelTask(uuid)
 			return
-		case j, ok := <-jobs:
-			if !ok {
-				return
-			}
-			s.logger.Printf("worker started processing image with id: %d", j.Id)
-
-			processedImage, err := s.processImage(j.Data)
-			if err != nil {
-				s.cancelTask(uuid)
-				return
-			}
-			processedImage.Id = j.Id
-
-			err = s.storage.AddFaces(processedImage)
-			if err != nil {
-				s.cancelTask(uuid)
-				return
-			}
-			s.logger.Printf("image with id %d processed", j.Id)
 		}
+		processedImage.Id = j.Id
+
+		err = s.storage.AddFaces(processedImage)
+		if err != nil {
+			s.cancelTask(uuid)
+			return
+		}
+		s.logger.Printf("image with id %d processed", j.Id)
 	}
 }
 
