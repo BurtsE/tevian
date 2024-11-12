@@ -1,11 +1,14 @@
 package service
 
-import "tevian/internal/models"
+import (
+	"context"
+	"tevian/internal/models"
+)
 
 type Service interface {
-	CreateTask() (string, error)
-	Task(string) (models.Task, error)
-	StartTask(string) error
-	DeleteTask(string) error
-	AddImageToTask(string, string, []byte) error
+	CreateTask(context.Context) (string, error)
+	Task(context.Context, string) (models.Task, error)
+	StartTask(context.Context, string) error
+	DeleteTask(context.Context, string) error
+	AddImageToTask(context.Context, string, string, []byte) error
 }

@@ -1,6 +1,7 @@
 package disk
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,7 +11,7 @@ import (
 )
 
 // GetImages implements storage.DiskStorage.
-func (s *storage) Images(uuid string) ([]models.Image, error) {
+func (s *storage) Images(ctx context.Context, uuid string) ([]models.Image, error) {
 	dirName := fmt.Sprintf("images/%s/", uuid)
 	entries, err := os.ReadDir(dirName)
 	if err != nil {

@@ -13,7 +13,7 @@ func (s *service) initWorkers(ctx context.Context, uuid string, images []models.
 
 	for range s.workersForTask {
 		wg.Add(1)
-		go s.worker(uuid, jobsChan, wg)
+		go s.worker(ctx, uuid, jobsChan, wg)
 	}
 	go func() {
 		defer close(jobsChan)
@@ -28,24 +28,24 @@ func (s *service) initWorkers(ctx context.Context, uuid string, images []models.
 	wg.Wait()
 	select {
 	case <-ctx.Done():
-		s.stopExecution(uuid, errors.New("task was cancelled"))
+		s.stopExecution(ctx, uuid, errors.New("task was cancelled"))
 	default:
-		s.completeExecution(uuid)
+		s.completeExecution(ctx, uuid)
 	}
 }
-func (s *service) worker(uuid string, jobs <-chan models.Image, wg *sync.WaitGroup) {
+func (s *service) worker(ctx context.Context, uuid string, jobs <-chan models.Image, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for j := range jobs {
 		s.logger.Printf("worker started processing image with id: %d", j.Id)
 
-		processedImage, err := s.processImage(j.Data)
+		processedImage, err := s.processImage(ctx, j.Data)
 		if err != nil {
 			s.cancelTask(uuid)
 			return
 		}
 		processedImage.Id = j.Id
 
-		err = s.storage.AddFaces(processedImage)
+		err = s.storage.AddFaces(ctx, processedImage)
 		if err != nil {
 			s.cancelTask(uuid)
 			return
@@ -54,8 +54,8 @@ func (s *service) worker(uuid string, jobs <-chan models.Image, wg *sync.WaitGro
 	}
 }
 
-func (s *service) stopExecution(uuid string, err error) {
-	errStatusUpd := s.storage.SetTaskStatus(uuid, models.Failed)
+func (s *service) stopExecution(ctx context.Context, uuid string, err error) {
+	errStatusUpd := s.storage.SetTaskStatus(ctx, uuid, models.Failed)
 	if errStatusUpd != nil {
 		s.logger.Printf("could not update task status! uuid: %s, err:%v", uuid, errStatusUpd)
 		return
@@ -63,8 +63,8 @@ func (s *service) stopExecution(uuid string, err error) {
 	s.logger.Printf("task with id %s failed: %v", uuid, err)
 }
 
-func (s *service) completeExecution(uuid string) {
-	errStatusUpd := s.storage.SetTaskStatus(uuid, models.Completed)
+func (s *service) completeExecution(ctx context.Context, uuid string) {
+	errStatusUpd := s.storage.SetTaskStatus(ctx, uuid, models.Completed)
 	if errStatusUpd != nil {
 		s.logger.Printf("could not update task status! uuid: %s, err:%v", uuid, errStatusUpd)
 		return

@@ -7,9 +7,9 @@ import (
 	"time"
 )
 
-func (s *service) StartTask(uuid string) error {
+func (s *service) StartTask(ctx context.Context, uuid string) error {
 	var filter bool
-	status, err := s.storage.TaskStatus(uuid)
+	status, err := s.storage.TaskStatus(ctx, uuid)
 	if err != nil {
 		return err
 	}
@@ -22,7 +22,7 @@ func (s *service) StartTask(uuid string) error {
 		filter = true
 	}
 
-	err = s.storage.SetTaskStatus(uuid, models.Processed)
+	err = s.storage.SetTaskStatus(ctx, uuid, models.Processed)
 	if err != nil {
 		return err
 	}
@@ -32,12 +32,12 @@ func (s *service) StartTask(uuid string) error {
 		return err
 	}
 
-	images, err := s.diskStorage.Images(uuid)
+	images, err := s.diskStorage.Images(ctx, uuid)
 	if err != nil {
 		return err
 	}
 	if filter {
-		images, err = s.filterProcessedImages(images)
+		images, err = s.filterProcessedImages(ctx, images)
 		if err != nil {
 			return err
 		}
@@ -59,10 +59,10 @@ func (s *service) cancelTask(uuid string) {
 	}
 }
 
-func (s *service) filterProcessedImages(images []models.Image) ([]models.Image, error) {
+func (s *service) filterProcessedImages(ctx context.Context, images []models.Image) ([]models.Image, error) {
 	filteredImages := make([]models.Image, 0)
 	for _, image := range images {
-		faces, err := s.storage.FacesByImage(image.Id)
+		faces, err := s.storage.FacesByImage(ctx, image.Id)
 		if err != nil {
 			return nil, err
 		}

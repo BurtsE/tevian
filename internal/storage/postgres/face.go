@@ -6,7 +6,7 @@ import (
 	"tevian/internal/models"
 )
 
-func (s *Storage) AddFaces(img models.Image) error {
+func (s *Storage) AddFaces(ctx context.Context, img models.Image) error {
 	query := `
 		INSERT INTO FACES(width, height, x, y, gender, age, image_id)
 		VALUES($1,$2,$3,$4,$5,$6,$7)
@@ -26,7 +26,7 @@ func (s *Storage) AddFaces(img models.Image) error {
 	return nil
 }
 
-func (s *Storage) FacesByImage(imageId int64) ([]models.Face, error) {
+func (s *Storage) FacesByImage(ctx context.Context, imageId int64) ([]models.Face, error) {
 	query := `
 		SELECT width, height, x, y, gender, age
 		FROM faces

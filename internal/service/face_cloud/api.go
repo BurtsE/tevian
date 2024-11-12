@@ -1,6 +1,7 @@
 package facecloud
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -39,7 +40,7 @@ func (s *service) login() error {
 	return nil
 }
 
-func (s *service) processImage(data []byte) (models.Image, error) {
+func (s *service) processImage(ctx context.Context, data []byte) (models.Image, error) {
 	req := fasthttp.AcquireRequest()
 	req.SetRequestURI(s.url + "/api/v1/detect?demographics=true")
 	req.Header.SetMethod("POST")

@@ -1,19 +1,22 @@
 package storage
 
-import "tevian/internal/models"
+import (
+	"context"
+	"tevian/internal/models"
+)
 
 type Storage interface {
-	CreateTask(models.Task) error
-	DeleteTask(models.Task) error
-	TaskStatus(string) (models.TaskStatus, error)
-	SetTaskStatus(string, models.TaskStatus) error
+	CreateTask(context.Context, models.Task) error
+	DeleteTask(context.Context, models.Task) error
+	TaskStatus(context.Context, string) (models.TaskStatus, error)
+	SetTaskStatus(context.Context, string, models.TaskStatus) error
 
-	AddImage(string, string) (uint64, error)
-	AddFaces(models.Image) error
-	FacesByImage(int64) ([]models.Face, error)
+	AddImage(context.Context, string, string) (uint64, error)
+	AddFaces(context.Context, models.Image) error
+	FacesByImage(context.Context, int64) ([]models.Face, error)
 }
 type DiskStorage interface {
-	SaveImage(string, string, uint64, []byte) error
-	DeleteImages(string) error
-	Images(string) ([]models.Image, error)
+	SaveImage(context.Context, string, string, uint64, []byte) error
+	DeleteImages(context.Context, string) error
+	Images(context.Context, string) ([]models.Image, error)
 }

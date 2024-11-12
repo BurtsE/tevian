@@ -10,8 +10,6 @@ var _ def.DiskStorage = (*storage)(nil)
 type storage struct {
 }
 
-
-
 func NewStorage() *storage {
 	return &storage{}
 }

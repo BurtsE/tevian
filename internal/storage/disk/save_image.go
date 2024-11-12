@@ -2,12 +2,13 @@ package disk
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 )
 
-func (s *storage) SaveImage(uuid, title string, imageId uint64, img []byte) error {
+func (s *storage) SaveImage(ctx context.Context, uuid, title string, imageId uint64, img []byte) error {
 	fileName := bytes.NewBuffer([]byte("images"))
 
 	err := s.mkDir(fileName.String())

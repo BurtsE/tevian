@@ -1,6 +1,8 @@
 package postgres
 
-func (s *Storage) AddImage(uuid, title string) (uint64, error) {
+import "context"
+
+func (s *Storage) AddImage(ctx context.Context, uuid, title string) (uint64, error) {
 	var imageId uint64
 	query := `
 		INSERT INTO IMAGES(task_id, title)
