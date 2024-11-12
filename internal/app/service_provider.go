@@ -8,6 +8,7 @@ import (
 	"tevian/internal/storage"
 	"tevian/internal/storage/disk"
 	"tevian/internal/storage/postgres"
+	"tevian/internal/telegram"
 
 	"tevian/internal/api"
 
@@ -21,6 +22,7 @@ type serviceProvider struct {
 	router      *api.Router
 	diskStorage storage.DiskStorage
 	logger      *logrus.Logger
+	bot         *telegram.TelegramBot
 }
 
 func NewSericeProvider() *serviceProvider {
@@ -44,6 +46,7 @@ func (s *serviceProvider) Logger() *logrus.Logger {
 	}
 	return s.logger
 }
+
 func (s *serviceProvider) Postgres() storage.Storage {
 	if s.postgres == nil {
 		storage, err := postgres.NewStorage(s.Config())
@@ -72,4 +75,15 @@ func (s *serviceProvider) Router() *api.Router {
 		s.router = api.NewRouter(s.Config(), s.Service(), logrus.New())
 	}
 	return s.router
+}
+
+func (s *serviceProvider) TelegramBot() *telegram.TelegramBot {
+	if s.bot == nil {
+		bot, err := telegram.NewTGBot(s.Config())
+		if err != nil {
+			log.Fatal(err)
+		}
+		s.bot = bot
+	}
+	return s.bot
 }

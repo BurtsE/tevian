@@ -59,8 +59,8 @@ func statusHandler(ctx *fasthttp.RequestCtx) {
 func (r *Router) loggerDecorator(handler fasthttp.RequestHandler) fasthttp.RequestHandler {
 	return func(ctx *fasthttp.RequestCtx) {
 		defer func() {
-			if recover := recover(); recover != nil {
-				r.logger.Println("Recovered in f", recover)
+			if rec := recover(); rec != nil {
+				r.logger.Println("Recovered in f", rec)
 				ctx.SetStatusCode(500)
 			}
 		}()

@@ -5,6 +5,7 @@ type Config struct {
 	Server      `json:"server"`
 	FaceCloud   `json:"face_cloud"`
 	Credentials `json:"credentials"`
+	TGBot       `json:"tg_bot"`
 }
 type Postgres struct {
 	Host     string `json:"host"`
@@ -28,4 +29,8 @@ type FaceCloud struct {
 type Credentials struct {
 	Login    string `env:"LOGIN,notEmpty"`
 	Password string `env:"PASSWORD,notEmpty"`
+}
+
+type TGBot struct {
+	Token string `env:"TOKEN,notEmpty"`
 }
