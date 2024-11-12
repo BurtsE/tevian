@@ -31,7 +31,7 @@ func (r *Router) addImage(ctx *fasthttp.RequestCtx) {
 	}
 
 	title := data.File["image"][0].Filename
-	err = r.service.AddImageToTask(uuid, title, imgBytes)
+	err = r.service.AddImageToTask(ctx, uuid, title, imgBytes)
 	if err != nil {
 		r.logger.Println(err)
 		ctx.SetStatusCode(500)

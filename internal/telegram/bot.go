@@ -20,6 +20,8 @@ func NewTGBot(cfg *config.Config) (*TelegramBot, error) {
 }
 
 func (b *TelegramBot) Start(ctx context.Context) {
+	log.Printf("Started bot")
+
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 	updates := b.bot.GetUpdatesChan(u)
@@ -35,6 +37,5 @@ func (b *TelegramBot) Start(ctx context.Context) {
 				b.bot.Send(msg)
 			}
 		}
-
 	}
 }

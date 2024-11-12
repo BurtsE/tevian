@@ -18,6 +18,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - LOGIN=${LOGIN}
       - PASSWORD=${PASSWORD}
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
     build:
       context:    ../
       dockerfile: ./deploy/Dockerfile

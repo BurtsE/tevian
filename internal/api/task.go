@@ -16,7 +16,7 @@ func (r *Router) task(ctx *fasthttp.RequestCtx) {
 		ctx.SetStatusCode(500)
 		return
 	}
-	task, err := r.service.Task(uuid)
+	task, err := r.service.Task(ctx, uuid)
 	if err != nil {
 		r.logger.Println(err)
 		ctx.SetStatusCode(500)
@@ -31,7 +31,7 @@ func (r *Router) task(ctx *fasthttp.RequestCtx) {
 }
 
 func (r *Router) addTask(ctx *fasthttp.RequestCtx) {
-	uuid, err := r.service.CreateTask()
+	uuid, err := r.service.CreateTask(ctx)
 	if err != nil {
 		r.logger.Println(err)
 		ctx.SetStatusCode(500)
@@ -50,7 +50,7 @@ func (r *Router) deleteTask(ctx *fasthttp.RequestCtx) {
 		ctx.SetStatusCode(500)
 		return
 	}
-	err := r.service.DeleteTask(uuid)
+	err := r.service.DeleteTask(ctx, uuid)
 	if err != nil {
 		r.logger.Println(err)
 		ctx.SetStatusCode(500)
@@ -68,7 +68,7 @@ func (r *Router) startTask(ctx *fasthttp.RequestCtx) {
 		ctx.SetStatusCode(500)
 		return
 	}
-	err := r.service.StartTask(uuid)
+	err := r.service.StartTask(ctx, uuid)
 	if err != nil {
 		r.logger.Println(err)
 		ctx.SetStatusCode(500)
