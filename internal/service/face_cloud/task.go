@@ -48,7 +48,7 @@ func (s *service) DeleteTask(ctx context.Context, uuid string) error {
 		return err
 	}
 	if status == models.Processed {
-		s.cancelTask(ctx, uuid)
+		s.cancelTask(uuid)
 	}
 	task := models.Task{
 		UUID:   uuid,

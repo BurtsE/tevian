@@ -32,5 +32,5 @@ type Credentials struct {
 }
 
 type TGBot struct {
-	Token string `env:"TOKEN,notEmpty"`
+	Token string `env:"TELEGRAM_TOKEN,notEmpty"`
 }
