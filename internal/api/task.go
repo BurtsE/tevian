@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-
 	"github.com/valyala/fasthttp"
 )
 
@@ -24,6 +23,7 @@ func (r *Router) task(ctx *fasthttp.RequestCtx) {
 	}
 	data, err := json.Marshal(&task)
 	if err != nil {
+		r.logger.Println(err)
 		ctx.SetStatusCode(500)
 		return
 	}

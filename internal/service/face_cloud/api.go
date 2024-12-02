@@ -50,9 +50,13 @@ func (s *service) processImage(data []byte) (models.Image, error) {
 	req.PostArgs().Add("attributes", "true")
 
 	resp := fasthttp.AcquireResponse()
+
 	err := fasthttp.Do(req, resp)
 	if err != nil {
 		return models.Image{}, err
+	}
+	if resp.StatusCode() != 200 {
+		return models.Image{}, errors.New(resp.String())
 	}
 	result := models.FaceServiceTask{}
 

@@ -1,6 +1,8 @@
 package models
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type Task struct {
 	UUID   string     `json:"uuid"`
@@ -30,8 +32,13 @@ func (t *Task) CalcStats() {
 			humanCounter++
 		}
 	}
-	t.Stats.FemalesMeanAge = femalesMeanAge / float64(females)
-	t.Stats.MalesMeanAge = malesMeanAge / float64(males)
+
+	if females > 0 {
+		t.Stats.FemalesMeanAge = femalesMeanAge / float64(females)
+	}
+	if males > 0 {
+		t.Stats.FemalesMeanAge = femalesMeanAge / float64(females)
+	}
 	t.Stats.FaceCount = humanCounter
 	t.Stats.HumanCount = uint32(males) + uint32(females)
 }

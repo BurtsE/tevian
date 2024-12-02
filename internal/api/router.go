@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/base64"
+	"github.com/valyala/fasthttp/pprofhandler"
 	"tevian/internal/config"
 	"tevian/internal/service"
 
@@ -33,15 +34,16 @@ func NewRouter(cfg *config.Config, service service.Service, logger *logrus.Logge
 		user:     cfg.Credentials.Login,
 		password: cfg.Credentials.Password,
 	}
-	srv.Handler = r.loggerDecorator(r.basicAuth(rtr.Handler))
+	srv.Handler = r.loggerDecorator(rtr.Handler)
 
-	rtr.GET("/task/{uuid}", r.task)
-	rtr.POST("/task", r.addTask)
-	rtr.POST("/task/{uuid}/start", r.startTask)
-	rtr.DELETE("/task/{uuid}", r.deleteTask)
-	rtr.PUT("/task/image", r.addImage)
+	rtr.GET("/task/{uuid}", r.basicAuth(r.task))
+	rtr.POST("/task", r.basicAuth(r.addTask))
+	rtr.POST("/task/{uuid}/start", r.basicAuth(r.startTask))
+	rtr.DELETE("/task/{uuid}", r.basicAuth(r.deleteTask))
+	rtr.PUT("/task/image", r.basicAuth(r.addImage))
 
 	r.router.GET("/status", statusHandler)
+	r.router.GET("/debug/pprof/{profile:*}", pprofhandler.PprofHandler)
 	return r
 }
 
@@ -59,7 +61,7 @@ func statusHandler(ctx *fasthttp.RequestCtx) {
 func (r *Router) loggerDecorator(handler fasthttp.RequestHandler) fasthttp.RequestHandler {
 	return func(ctx *fasthttp.RequestCtx) {
 		defer func() {
-			if recover := recover(); recover != nil {
+			if rec := recover(); rec != nil {
 				r.logger.Println("Recovered in f", recover)
 				ctx.SetStatusCode(500)
 			}
